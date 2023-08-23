@@ -31,7 +31,11 @@ def initialize_driver(chromedriver_path: str):
 
 def navigate_to_url(driver, url: str):
     """Navigates to the specified URL using the provided WebDriver instance."""
+    # if the url is prefixed by https://mediaspace.minnstate.edu/ store the string captionList and class
+    # if the url is prefixed by https://minnstate.zoom.us/ store the string transcript-list and class
     print(f"Navigating to {url}...")
+    # Depending on whether the url is prefixed by minnstate or
+    # mediaspace, store the target elemtents in a list.
     driver.get(url)
 
 
@@ -52,7 +56,8 @@ def find_transcript_list(driver):
         return None
 
 
-def extract_transcripts_from_list(transcript_list, professor_name):
+# This will extract the transcripts from minnstate links
+def extract_transcripts_from_minnstate(transcript_list, professor_name):
     """Extracts and returns transcripts from a transcript list."""
     transcript_json_list = []
 
@@ -81,6 +86,16 @@ def extract_transcripts_from_list(transcript_list, professor_name):
                     professor_name = parts[0]
 
     return transcript_json_list
+
+
+#  This will extract the transcripts from mediaspace links
+def extract_transcripts_from_mediaspace(transcript_list, professor_name):
+    return
+
+
+# This will parse the url prefix and call the appropriate scraping function
+def extract_transcripts():
+    return
 
 
 def join_transcripts(transcript_json_list):
@@ -156,7 +171,7 @@ def main():
         professor_name = ""
 
         # Extract transcripts from the transcript list
-        transcript_json_list = extract_transcripts_from_list(
+        transcript_json_list = extract_transcripts_from_minnstate(
             transcript_list, professor_name
         )
 

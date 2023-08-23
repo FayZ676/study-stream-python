@@ -7,6 +7,6 @@
 4. This project also uses OpenAI's GPT-3.5 LLM model which requires a valid API key. Add your API key to the `.env` as well.
 
 ## Future Updates
-- [ ] Add support for other browsers. ChromeWebdriver is finicky.
+- [ ] Add support for other scrapers. ChromeWebdriver is finicky. I recall using `requests` once to do the same thing much simpler.
 - [ ] Add support for other models. GPT-3.5 LLM is expensive.
-- [ ] Convert into a REST API (FastAPI is easy).
+- [ ] Convert into a REST API (FastAPI is easy). Sucks to have to run the script every time you want to query.

@@ -151,25 +151,6 @@ def main():
     # Find the transcript list
     transcript_list = find_transcript_list(driver)
 
-    # if transcript_list:
-    #     # Initialize professor's name
-    #     professor_name = ""
-
-    #     # Extract transcripts from the transcript list
-    #     transcript_json_list = extract_transcripts_from_list(
-    #         transcript_list, professor_name
-    #     )
-
-    #     # Concatenate all "message" fields and count tokens
-    #     concatenated_messages = join_transcripts(transcript_json_list)
-    #     num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
-    #     check_token_count(num_tokens)
-
-    #     # Query the transcripts
-    #     query = "What is the name of the course?"
-    #     response = query_transcripts(concatenated_messages, query)
-    #     print(response)
-
     if transcript_list:
         # Initialize professor's name
         professor_name = ""

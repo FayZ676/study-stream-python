@@ -14,4 +14,4 @@ Talk to your professor's Zoom recordings and get an instant summary of the lectu
 ## Future Updates
 - [ ] Add support for other scrapers. ChromeWebdriver is finicky. I recall using `requests` once to do the same thing much simpler.
 - [ ] Add support for other models. GPT-3.5 LLM is expensive.
-- [ ] Convert into a REST API (FastAPI is easy). Sucks to have to run the script every time you want to query.
+- [ ] Convert into a REST API (FastAPI is easy). Sucks to have to run the script every time you want to query a new lecture.

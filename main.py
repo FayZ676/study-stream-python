@@ -121,9 +121,7 @@ def query_transcripts(concatenated_messages: str, query: str):
 def main():
     # Define the URL and path to Chromedriver
     zoom_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
-    chromedriver_path = (
-        "/usr/local/bin/chromedriver"  # Replace with your Chromedriver path
-    )
+    chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
 
     # Initialize WebDriver
     driver = initialize_driver(chromedriver_path)

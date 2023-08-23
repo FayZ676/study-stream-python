@@ -4,6 +4,13 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 import json
 import tiktoken
+import os
+import openai
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def num_tokens_from_string(string: str, encoding_name: str) -> int:
@@ -91,6 +98,26 @@ def check_token_count(num_tokens: int):
         pass
 
 
+def query_transcripts(concatenated_messages: str, query: str):
+    """Queries the transcripts for a specific term."""
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo-16k",
+        messages=[
+            {
+                "role": "user",
+                "content": concatenated_messages + "\n\n" + query,
+            },
+        ],
+        temperature=1,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+
+    return response
+
+
 def main():
     # Define the URL and path to Chromedriver
     zoom_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
@@ -121,10 +148,10 @@ def main():
         num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
         check_token_count(num_tokens)
 
-        # Print the concatenated messages and the token count
-        print("Concatenated Messages:")
-        print(concatenated_messages)
-        print(f"Total Tokens: {num_tokens}")
+        # Query the transcripts
+        query = "What is the name of the course?"
+        response = query_transcripts(concatenated_messages, query)
+        print(response.choices[0].message.content)
 
     # Close the WebDriver
     driver.quit()

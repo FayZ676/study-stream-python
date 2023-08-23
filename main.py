@@ -5,10 +5,6 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 import json
 import tiktoken
 
-# Initialize tiktoken encoding
-encoding = tiktoken.get_encoding("cl100k_base")
-encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-
 
 def num_tokens_from_string(string: str, encoding_name: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -80,6 +76,21 @@ def extract_transcripts_from_list(transcript_list, professor_name):
     return transcript_json_list
 
 
+def join_transcripts(transcript_json_list):
+    """Joins the messages from a list of transcripts."""
+    return " ".join([item["message"] for item in transcript_json_list])
+
+
+def check_token_count(num_tokens: int):
+    if num_tokens > 12000:
+        print(
+            "Error: The transcript is too long.\nThe model can only take 12,000 tokens and the transcript is {num_tokens} tokens."
+        )
+        return
+    else:
+        pass
+
+
 def main():
     # Define the URL and path to Chromedriver
     zoom_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
@@ -105,9 +116,15 @@ def main():
             transcript_list, professor_name
         )
 
-        # Print the list of JSON items
-        for item in transcript_json_list:
-            print(json.dumps(item, indent=4))
+        # Concatenate all "message" fields and count tokens
+        concatenated_messages = join_transcripts(transcript_json_list)
+        num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
+        check_token_count(num_tokens)
+
+        # Print the concatenated messages and the token count
+        print("Concatenated Messages:")
+        print(concatenated_messages)
+        print(f"Total Tokens: {num_tokens}")
 
     # Close the WebDriver
     driver.quit()

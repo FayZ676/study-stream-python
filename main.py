@@ -115,7 +115,26 @@ def query_transcripts(concatenated_messages: str, query: str):
         presence_penalty=0,
     )
 
+    response = response.choices[0].message.content
     return response
+
+
+def ask_question(concatenated_messages):
+    """Allows the user to ask a question and get a response."""
+    while True:
+        print("\nOptions:")
+        print("1. Ask a question")
+        print("2. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            query = input("Enter your question: ")
+            response = query_transcripts(concatenated_messages, query)
+            print(response)
+        elif choice == "2":
+            break
+        else:
+            print("Invalid choice. Please select 1 to ask a question or 2 to exit.")
 
 
 def main():
@@ -132,6 +151,25 @@ def main():
     # Find the transcript list
     transcript_list = find_transcript_list(driver)
 
+    # if transcript_list:
+    #     # Initialize professor's name
+    #     professor_name = ""
+
+    #     # Extract transcripts from the transcript list
+    #     transcript_json_list = extract_transcripts_from_list(
+    #         transcript_list, professor_name
+    #     )
+
+    #     # Concatenate all "message" fields and count tokens
+    #     concatenated_messages = join_transcripts(transcript_json_list)
+    #     num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
+    #     check_token_count(num_tokens)
+
+    #     # Query the transcripts
+    #     query = "What is the name of the course?"
+    #     response = query_transcripts(concatenated_messages, query)
+    #     print(response)
+
     if transcript_list:
         # Initialize professor's name
         professor_name = ""
@@ -146,10 +184,8 @@ def main():
         num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
         check_token_count(num_tokens)
 
-        # Query the transcripts
-        query = "What is the name of the course?"
-        response = query_transcripts(concatenated_messages, query)
-        print(response.choices[0].message.content)
+        # Interactive menu for asking questions
+        ask_question(concatenated_messages)
 
     # Close the WebDriver
     driver.quit()

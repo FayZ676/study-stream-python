@@ -2,11 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import json
 import tiktoken
 import os
 import openai
 from dotenv import load_dotenv
+import time
 
 # Load environment variables from .env
 load_dotenv()
@@ -37,6 +40,8 @@ def navigate_to_url(driver, url: str):
     # Depending on whether the url is prefixed by minnstate or
     # mediaspace, store the target elemtents in a list.
     driver.get(url)
+
+    play_video(driver)
 
 
 def find_transcript_list(driver):
@@ -158,12 +163,23 @@ def ask_question(concatenated_messages):
 def find_transcript_list_mediaspace(driver):
     """Finds and returns the transcript list element using the WebDriver instance."""
     try:
+        # Find the parent div element by class name
         print("Finding transcript list...")
-        transcript_list = driver.find_element(By.CLASS_NAME, "transcript-list")
-        driver.implicitly_wait(2)
-        if transcript_list:
+        transcript_list = driver.find_element(
+            By.CLASS_NAME, "captionList__transcript-wrapper___Omf8T"
+        )
+
+        # Get the outer HTML content of the transcript list parent element
+        transcript_list_html = transcript_list.get_attribute("outerHTML")
+
+        # # export the html to a file for debugging
+        # with open("transcript_list.html", "w") as f:
+        #     f.write(transcript_list_html)
+
+        if transcript_list_html:
             print("Transcript list found.")
-            return transcript_list
+            print("TRANSCRIPT LIST HTML TYPE: ", type(transcript_list_html))
+            return transcript_list_html
         else:
             print("Transcript list not found.")
             return None
@@ -172,36 +188,52 @@ def find_transcript_list_mediaspace(driver):
         return None
 
 
-# This will extract the transcripts from minnstate links
-def extract_transcripts_from_mediaspace(transcript_list, professor_name):
+def extract_transcripts_from_mediaspace(transcript_list_html):
     """Extracts and returns transcripts from a transcript list."""
     transcript_json_list = []
 
-    # Find all <li> elements within the transcript list
-    transcript_items = transcript_list.find_elements(By.TAG_NAME, "li")
+    # Find all <div> elements with class "caption__caption___v5MZY" within the transcript list
+    transcript_items = transcript_list_html.find_elements(
+        By.CLASS_NAME, "caption__caption___v5MZY"
+    )
 
-    # Loop through the <li> elements and extract and format the content
+    # Loop through the <div> elements and extract and format the content
     for item in transcript_items:
         aria_label = item.get_attribute("aria-label")
         if aria_label:
             # Split the aria-label into timestamp and message
-            parts = aria_label.split(", ", 2)
-            if len(parts) == 3:
-                timestamp = parts[1]
-                message = parts[2]
+            parts = aria_label.split(" ", 1)
+            if len(parts) == 2:
+                timestamp = parts[0]
+                message = parts[1]
                 # Create a JSON item
                 transcript_json = {
-                    "professor_name": professor_name,
                     "timestamp": timestamp,
                     "message": message,
                 }
                 transcript_json_list.append(transcript_json)
-            elif len(parts) == 1:
-                # Set the professor's name if it's not already set
-                if not professor_name:
-                    professor_name = parts[0]
+
+    print("TRANSCRIPTION JSON LIST:", transcript_json_list)
 
     return transcript_json_list
+
+
+# Clicks the play button on the video to load the transcripts
+def play_video(driver):
+    # click the play button using the xpath
+    play_button = driver.find_element(
+        By.XPATH,
+        "/html/body/div[1]/div[2]/div[5]/div[2]/div[2]/div[1]/div/div/div/div/div[2]/div[1]/div[3]/div[1]/div[3]/button/div/i",
+    )
+    play_button.click()
+
+    # Wait for 10 seconds or until the class "caption__caption___v5MZY" is found
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "caption__caption___v5MZY"))
+    )
+
+    with open("raw_after.html", "w") as f:
+        f.write(driver.page_source)
 
 
 # ------------------------- MEDIASPACE FUNCTIONS END -------------------------
@@ -210,16 +242,30 @@ def extract_transcripts_from_mediaspace(transcript_list, professor_name):
 def main():
     # Define the URL and path to Chromedriver
     zoom_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
+    mediaspace_url = "https://mediaspace.minnstate.edu/media/Biodiversity/1_etpkqwi2"
     chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
 
     # Initialize WebDriver
     driver = initialize_driver(chromedriver_path)
 
     # Navigate to the URL
-    navigate_to_url(driver, zoom_url)
+    navigate_to_url(driver, mediaspace_url)
 
     # Find the transcript list
-    transcript_list = find_transcript_list_mediaspace(driver)
+    transcript_list_html = find_transcript_list_mediaspace(driver)
+
+    # # Extract transcripts from the transcript list
+    # transcript_json_list = extract_transcripts_from_mediaspace(transcript_list_html)
+
+    # # Concatenate all "message" fields and count tokens
+    # concatenated_messages = join_transcripts(transcript_json_list)
+    # num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
+    # check_token_count(num_tokens)
+
+    # # Interactive menu for asking questions
+    # ask_question(concatenated_messages)
+
+    # ---------------------------------------------
 
     # if transcript_list:
     #     # Initialize professor's name

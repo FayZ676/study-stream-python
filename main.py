@@ -20,6 +20,7 @@ def num_tokens_from_string(string: str, encoding_name: str) -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
+    print("NUMBER OF TOKENS: ", num_tokens)
     return num_tokens
 
 
@@ -105,7 +106,11 @@ def extract_transcripts():
 
 def join_transcripts(transcript_json_list):
     """Joins the messages from a list of transcripts."""
-    return " ".join([item["message"] for item in transcript_json_list])
+    concatenated_messages = " ".join(
+        [item["message"].replace("\n", " ") for item in transcript_json_list]
+    )
+    print("CONCATENATED TRANSCRIPTS: ", concatenated_messages)
+    return concatenated_messages
 
 
 def check_token_count(num_tokens: int):
@@ -169,17 +174,21 @@ def find_transcript_list_mediaspace(driver):
             By.CLASS_NAME, "captionList__transcript-wrapper___Omf8T"
         )
 
-        # Get the outer HTML content of the transcript list parent element
-        transcript_list_html = transcript_list.get_attribute("outerHTML")
+        # # Get the outer HTML content of the transcript list parent element
+        # transcript_list_html = transcript_list.get_attribute("outerHTML")
 
         # # export the html to a file for debugging
         # with open("transcript_list.html", "w") as f:
         #     f.write(transcript_list_html)
 
-        if transcript_list_html:
+        # if transcript_list_html:
+        #     print("Transcript list found.")
+        #     print("TRANSCRIPT LIST HTML TYPE: ", type(transcript_list_html))
+        #     return transcript_list_html
+        if transcript_list:
             print("Transcript list found.")
-            print("TRANSCRIPT LIST HTML TYPE: ", type(transcript_list_html))
-            return transcript_list_html
+            print("TRANSCRIPT LIST HTML TYPE: ", type(transcript_list))
+            return transcript_list
         else:
             print("Transcript list not found.")
             return None
@@ -213,8 +222,6 @@ def extract_transcripts_from_mediaspace(transcript_list_html):
                 }
                 transcript_json_list.append(transcript_json)
 
-    print("TRANSCRIPTION JSON LIST:", transcript_json_list)
-
     return transcript_json_list
 
 
@@ -231,9 +238,6 @@ def play_video(driver):
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "caption__caption___v5MZY"))
     )
-
-    with open("raw_after.html", "w") as f:
-        f.write(driver.page_source)
 
 
 # ------------------------- MEDIASPACE FUNCTIONS END -------------------------
@@ -252,18 +256,18 @@ def main():
     navigate_to_url(driver, mediaspace_url)
 
     # Find the transcript list
-    transcript_list_html = find_transcript_list_mediaspace(driver)
+    transcript_list = find_transcript_list_mediaspace(driver)
 
-    # # Extract transcripts from the transcript list
-    # transcript_json_list = extract_transcripts_from_mediaspace(transcript_list_html)
+    # Extract transcripts from the transcript list
+    transcript_json_list = extract_transcripts_from_mediaspace(transcript_list)
 
-    # # Concatenate all "message" fields and count tokens
-    # concatenated_messages = join_transcripts(transcript_json_list)
-    # num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
-    # check_token_count(num_tokens)
+    # Concatenate all "message" fields and count tokens
+    concatenated_messages = join_transcripts(transcript_json_list)
+    num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
+    check_token_count(num_tokens)
 
-    # # Interactive menu for asking questions
-    # ask_question(concatenated_messages)
+    # Interactive menu for asking questions
+    ask_question(concatenated_messages)
 
     # ---------------------------------------------
 

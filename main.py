@@ -152,6 +152,61 @@ def ask_question(concatenated_messages):
             print("Invalid choice. Please select 1 to ask a question or 2 to exit.")
 
 
+# ------------------------- MEDIASPACE FUNCTIONS START -------------------------
+
+
+def find_transcript_list_mediaspace(driver):
+    """Finds and returns the transcript list element using the WebDriver instance."""
+    try:
+        print("Finding transcript list...")
+        transcript_list = driver.find_element(By.CLASS_NAME, "transcript-list")
+        driver.implicitly_wait(2)
+        if transcript_list:
+            print("Transcript list found.")
+            return transcript_list
+        else:
+            print("Transcript list not found.")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return None
+
+
+# This will extract the transcripts from minnstate links
+def extract_transcripts_from_mediaspace(transcript_list, professor_name):
+    """Extracts and returns transcripts from a transcript list."""
+    transcript_json_list = []
+
+    # Find all <li> elements within the transcript list
+    transcript_items = transcript_list.find_elements(By.TAG_NAME, "li")
+
+    # Loop through the <li> elements and extract and format the content
+    for item in transcript_items:
+        aria_label = item.get_attribute("aria-label")
+        if aria_label:
+            # Split the aria-label into timestamp and message
+            parts = aria_label.split(", ", 2)
+            if len(parts) == 3:
+                timestamp = parts[1]
+                message = parts[2]
+                # Create a JSON item
+                transcript_json = {
+                    "professor_name": professor_name,
+                    "timestamp": timestamp,
+                    "message": message,
+                }
+                transcript_json_list.append(transcript_json)
+            elif len(parts) == 1:
+                # Set the professor's name if it's not already set
+                if not professor_name:
+                    professor_name = parts[0]
+
+    return transcript_json_list
+
+
+# ------------------------- MEDIASPACE FUNCTIONS END -------------------------
+
+
 def main():
     # Define the URL and path to Chromedriver
     zoom_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
@@ -164,24 +219,24 @@ def main():
     navigate_to_url(driver, zoom_url)
 
     # Find the transcript list
-    transcript_list = find_transcript_list(driver)
+    transcript_list = find_transcript_list_mediaspace(driver)
 
-    if transcript_list:
-        # Initialize professor's name
-        professor_name = ""
+    # if transcript_list:
+    #     # Initialize professor's name
+    #     professor_name = ""
 
-        # Extract transcripts from the transcript list
-        transcript_json_list = extract_transcripts_from_minnstate(
-            transcript_list, professor_name
-        )
+    #     # Extract transcripts from the transcript list
+    #     transcript_json_list = extract_transcripts_from_minnstate(
+    #         transcript_list, professor_name
+    #     )
 
-        # Concatenate all "message" fields and count tokens
-        concatenated_messages = join_transcripts(transcript_json_list)
-        num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
-        check_token_count(num_tokens)
+    #     # Concatenate all "message" fields and count tokens
+    #     concatenated_messages = join_transcripts(transcript_json_list)
+    #     num_tokens = num_tokens_from_string(concatenated_messages, "cl100k_base")
+    #     check_token_count(num_tokens)
 
-        # Interactive menu for asking questions
-        ask_question(concatenated_messages)
+    #     # Interactive menu for asking questions
+    #     ask_question(concatenated_messages)
 
     # Close the WebDriver
     driver.quit()

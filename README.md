@@ -1,7 +1,7 @@
-# zoom-transcription-summarizer-bot
+# Study Stream 🐠
 
 # What is this?
-Talk to your professor's Zoom recordings and get an instant summary of the lecture!
+Study stream transforms your zoom lectures into interactive chat sessions powered by AI.
 
 ## To run locally
 1. Run `pip install -r requirements.txt` to install dependencies.

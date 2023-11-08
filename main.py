@@ -212,7 +212,7 @@ def query_transcripts(concatenated_messages: str, query: str):
         messages=[
             {
                 "role": "user",
-                "content": concatenated_messages + "\n\n" + query,
+                "content": "\n\n".join(concatenated_messages) + "\n\n" + query,
             },
         ],
         temperature=1,
@@ -226,28 +226,17 @@ def query_transcripts(concatenated_messages: str, query: str):
     return response
 
 
-def ask_question(concatenated_messages):
-    """Allows the user to ask a question and get a response."""
-    while True:
-        print("\nOptions:")
-        print("1. Ask a question")
-        print("2. Exit")
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            query = input("Enter your question: ")
-            response = query_transcripts(concatenated_messages, query)
-            print(response)
-        elif choice == "2":
-            break
-        else:
-            print("Invalid choice. Please select 1 to ask a question or 2 to exit.")
+def ask_question(concatenated_messages, query):
+    response = query_transcripts(concatenated_messages, query)
+    return response
 
 
 def main():
     # Define the URL and path to Chromedriver
     minnstate_url = "https://minnstate.zoom.us/rec/play/_4rxoQOaGD-wGoADdphEx2xrr6mIL-03RBLOQVliLSfpCWnqaFw8ZsPH8S15GFf5ntMMhM-AkVvOWAxN.QqPr_5357BdzYEQ0?canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fminnstate.zoom.us%2Frec%2Fshare%2FrC4xystmtS7JDVaooCAbPB02ERdEOejlUwp0FnMais6PN1cT6JdjSA3b9ALhIJsc.tA1t1VFZeRAaYE_Y"
-    mediaspace_url = "https://mediaspace.minnstate.edu/media/Biodiversity/1_etpkqwi2"
+    mediaspace_url = (
+        "https://mediaspace.minnstate.edu/media/CSCI+430+Section+1/1_pcxhea6i"
+    )
     chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
 
     # Initialize WebDriver
